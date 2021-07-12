@@ -15,11 +15,10 @@ defmodule Picasso.Schema.Rendition do
           hash: String.t(),
           content_type: String.t(),
           width: integer,
-          height: integer,
-          alt: String.t()
+          height: integer
         }
 
-  schema("picasso_originals") do
+  schema("picasso_renditions") do
     belongs_to(:original, Original)
     field(:filter_spec, :string)
     field(:filename, :string)
@@ -28,8 +27,6 @@ defmodule Picasso.Schema.Rendition do
     field(:content_type, :string)
     field(:width, :integer)
     field(:height, :integer)
-
-    field(:alt, :string, null: true)
 
     timestamps()
   end
