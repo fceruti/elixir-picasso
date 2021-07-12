@@ -5,3 +5,5 @@ config :picasso, Picasso.Repo,
   username: "user",
   password: "pass",
   hostname: "localhost"
+
+config :picasso, ecto_repos: [Picasso.Repo]
