@@ -1,10 +1,15 @@
-defmodule Picasso.Images.Original do
+defmodule Picasso.Schema.Rendition do
   use Ecto.Schema
 
   import Ecto.Changeset
 
+  alias Picasso.Schema.Original
+
   @type t :: %__MODULE__{
           id: integer,
+          original_id: integer,
+          original: Original.t() | %Ecto.Association.NotLoaded{},
+          filter_spec: String.t(),
           filename: String.t(),
           size: integer,
           hash: String.t(),
@@ -15,6 +20,8 @@ defmodule Picasso.Images.Original do
         }
 
   schema("picasso_originals") do
+    belongs_to(:original, Original)
+    field(:filter_spec, :string)
     field(:filename, :string)
     field(:size, :integer)
     field(:hash, :string)
