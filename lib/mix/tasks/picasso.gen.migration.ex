@@ -22,6 +22,8 @@ defmodule Mix.Tasks.Picasso.Gen.Migration do
     )
 
     # Copy renditions migrations
+    :timer.sleep(1000)
+
     tmpl_renditions =
       Path.expand(
         Path.join([__ENV__.file, "../../../../priv/templates/migrations", "renditions.exs"])
