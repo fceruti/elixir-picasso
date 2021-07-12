@@ -1,6 +1,8 @@
 defmodule ExampleWeb.Router do
   use ExampleWeb, :router
 
+  use Kaffy.Routes, scope: "/admin", pipe_through: []
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session

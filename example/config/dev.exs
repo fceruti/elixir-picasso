@@ -4,7 +4,7 @@ use Mix.Config
 config :example, Example.Repo,
   username: "postgres",
   password: "postgres",
-  database: "example_dev",
+  database: "picasso_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
