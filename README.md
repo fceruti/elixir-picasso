@@ -14,8 +14,21 @@ def deps do
 end
 ```
 
-Generate migrations
+Add picasso config
+
+```elixir
+
+config :picasso,
+  ecto_repo: YourApp.Repo,
+  backend: Picasso.Backend.File,
+  upload_dir: "path/to/your/media/dir",
+  upload_url: "localhost:4000/media/images",
 
 ```
+
+
+Generate migrations
+
+```bash
 mix picasso.gen.migration
 ```

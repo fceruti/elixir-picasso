@@ -26,6 +26,12 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :picasso,
+  ecto_repo: Example.Repo,
+  backend: Picasso.Backend.File,
+  upload_dir: Path.join([File.cwd!(), "media/picasso"])
+  upload_url: "localhost:4000/media/images",
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
