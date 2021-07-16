@@ -20,7 +20,7 @@ defmodule Picasso.Context do
     {:ok, [hash, size]} = get_file_info(tmp_path)
     {:ok, [width, height]} = get_image_dimensions(tmp_path)
 
-    {:ok, dest} = Config.backend().store(tmp_path, filename)
+    {:ok, filename} = Config.backend().store(tmp_path, filename)
 
     with {:ok, original} <-
            %Original{}
@@ -37,24 +37,82 @@ defmodule Picasso.Context do
       {:ok, original}
     else
       {:error, _reason} = error ->
-        Config.backend().remove(dest)
+        Config.backend().remove(filename)
         error
     end
   end
 
-  def update_original(original_id, %Plug.Upload{
-        filename: filename,
-        path: tmp_path,
-        content_type: content_type
-      }) do
-    IO.inspect(original_id)
-    IO.inspect(filename)
-    IO.inspect(tmp_path)
-    IO.inspect(content_type)
+  def update_original(
+        original_id,
+        %Plug.Upload{
+          filename: filename,
+          path: tmp_path,
+          content_type: content_type
+        },
+        alt
+      ) do
+    original = get_original!(original_id)
+    {:ok, [hash, size]} = get_file_info(tmp_path)
+
+    if original.hash != hash do
+      old_filename = original.filename
+      {:ok, filename} = get_unique_filename(filename)
+      {:ok, [width, height]} = get_image_dimensions(tmp_path)
+
+      {:ok, filename} = Config.backend().store(tmp_path, filename)
+
+      with {:ok, original} <-
+             original
+             |> Original.changeset(%{
+               filename: filename,
+               size: size,
+               hash: hash,
+               content_type: content_type,
+               width: width,
+               height: height,
+               alt: alt
+             })
+             |> Config.repo().update() do
+        Config.backend().remove(old_filename)
+        {:ok, original}
+      else
+        {:error, _reason} = error ->
+          Config.backend().remove(filename)
+          error
+      end
+    else
+      with {:ok, original} <-
+             original
+             |> Original.changeset(%{alt: alt})
+             |> Config.repo().update() do
+        {:ok, original}
+      else
+        {:error, _reason} = error ->
+          error
+      end
+    end
+
+    {:ok, original}
+  end
+
+  def update_original(original_id, nil, alt) do
+    original = get_original!(original_id)
+
+    with {:ok, original} <-
+           original
+           |> Original.changeset(%{alt: alt})
+           |> Config.repo().update() do
+      {:ok, original}
+    else
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   def delete_original(original_id) do
     IO.inspect(original_id)
+    original = get_original!(original_id)
+    {:ok, original}
   end
 
   # -----------------------

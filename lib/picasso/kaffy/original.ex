@@ -8,9 +8,15 @@ defmodule Picasso.Kaffy.Original do
   end
 
   def update(conn, _changeset) do
-    %{"original" => %{"filename" => filename, "alt" => alt}} = conn.params
-    {:ok, original} = Context.update_original(filename, alt)
-    {:ok, original}
+    case conn.params do
+      %{"id" => original_id, "original" => %{"filename" => filename, "alt" => alt}} ->
+        {:ok, original} = Context.update_original(original_id, filename, alt)
+        {:ok, original}
+
+      %{"id" => original_id, "original" => %{"alt" => alt}} ->
+        {:ok, original} = Context.update_original(original_id, nil, alt)
+        {:ok, original}
+    end
   end
 
   def delete(conn, _changeset) do
@@ -20,12 +26,10 @@ defmodule Picasso.Kaffy.Original do
 
   def index(_) do
     [
-      id: nil,
       filename: nil,
       content_type: nil,
-      size: nil,
-      width: nil,
-      height: nil,
+      size: %{name: "File Size (mb)", value: fn o -> size_in_mb(o.size) end},
+      dimensions: %{name: "Dimension (w x h)", value: fn o -> "#{o.width} x #{o.height}" end},
       inserted_at: nil
     ]
   end
@@ -35,5 +39,9 @@ defmodule Picasso.Kaffy.Original do
       filename: %{type: :file, label: "Image file"},
       alt: nil
     ]
+  end
+
+  defp size_in_mb(size_in_kylobytes) do
+    (size_in_kylobytes / 1_000_000) |> Decimal.from_float() |> Decimal.round(2)
   end
 end
