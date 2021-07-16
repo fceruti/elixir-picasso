@@ -8,13 +8,6 @@ config :kaffy,
 
 defmodule Example.Kaffy.Config do
   def create_resources(_conn) do
-    [
-      images: [
-        resources: [
-          originals: [schema: Picasso.Schema.Original],
-          renditions: [schema: Picasso.Schema.Rendition]
-        ]
-      ]
-    ]
+    [] ++ Picasso.Kaffy.Config.resources()
   end
 end
