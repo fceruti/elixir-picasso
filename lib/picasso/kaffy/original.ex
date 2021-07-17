@@ -20,8 +20,10 @@ defmodule Picasso.Kaffy.Original do
   end
 
   def delete(conn, _changeset) do
-    Context.delete_original(conn.params["id"])
-    :ok
+    case Context.delete_original(conn.params["id"]) do
+      {:ok, original} -> {:ok, original}
+      {:error, changeset} -> {:error, changeset}
+    end
   end
 
   def index(_) do

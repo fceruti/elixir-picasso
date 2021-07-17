@@ -110,9 +110,17 @@ defmodule Picasso.Context do
   end
 
   def delete_original(original_id) do
-    IO.inspect(original_id)
     original = get_original!(original_id)
-    {:ok, original}
+    old_filename = original.filename
+    # TODO: remove all renditions
+    case original |> Config.repo().delete() do
+      {:ok, original} ->
+        Config.backend().remove(old_filename)
+        {:ok, original}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   # -----------------------
