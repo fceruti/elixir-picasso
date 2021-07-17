@@ -2,27 +2,30 @@ defmodule Picasso.Kaffy.Original do
   alias Picasso.Context
 
   def insert(conn, _changeset) do
-    %{"original" => %{"filename" => filename, "alt" => alt}} = conn.params
-    {:ok, original} = Context.create_original(filename, alt)
-    {:ok, original}
+    case Context.create_original(
+           get_in(conn.params, ["original", "filename"]),
+           get_in(conn.params, ["original", "alt"])
+         ) do
+      {:ok, _original} = success -> success
+      {:error, _changeset} = error -> error
+    end
   end
 
   def update(conn, _changeset) do
-    case conn.params do
-      %{"id" => original_id, "original" => %{"filename" => filename, "alt" => alt}} ->
-        {:ok, original} = Context.update_original(original_id, filename, alt)
-        {:ok, original}
-
-      %{"id" => original_id, "original" => %{"alt" => alt}} ->
-        {:ok, original} = Context.update_original(original_id, nil, alt)
-        {:ok, original}
+    case Context.update_original(
+           get_in(conn.params, ["id"]),
+           get_in(conn.params, ["original", "filename"]),
+           get_in(conn.params, ["original", "alt"])
+         ) do
+      {:ok, _original} = success -> success
+      {:error, _changeset} = error -> error
     end
   end
 
   def delete(conn, _changeset) do
     case Context.delete_original(conn.params["id"]) do
-      {:ok, original} -> {:ok, original}
-      {:error, changeset} -> {:error, changeset}
+      {:ok, _original} = success -> success
+      {:error, _changeset} = error -> error
     end
   end
 

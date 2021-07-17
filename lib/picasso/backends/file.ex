@@ -1,20 +1,37 @@
 defmodule Picasso.Backend.File do
-  alias Picasso.Schema.Original
-  alias Picasso.Config
+  require Logger
+
+  alias Picasso.{Config, Helpers}
 
   def store(tmp_path, filename) do
-    final_path = Path.join([Config.upload_dir(), filename])
-    File.cp!(tmp_path, final_path)
-    {:ok, filename}
+    base_dir = Config.upload_dir()
+    final_path = Path.join([base_dir, filename])
+
+    case File.cp(tmp_path, final_path) do
+      :ok ->
+        {:ok, [hash, size]} = Helpers.get_file_info(final_path)
+        Logger.info("Stored #{filename} at #{base_dir}. Size: #{size}. Hash: #{hash}.")
+        {:ok, filename}
+
+      {:error, reason} ->
+        Logger.error("Failed storing #{filename} at #{base_dir}: #{reason}")
+        {:error, reason}
+    end
   end
 
   def remove(filename) do
-    path = Path.join([Config.upload_dir(), filename])
-    File.rm!(path)
-    {:ok, filename}
-  end
+    base_dir = Config.upload_dir()
+    path = Path.join([base_dir, filename])
+    {:ok, [hash, size]} = Helpers.get_file_info(path)
 
-  def get_url(%Original{filename: filename, hash: hash}) do
-    "#{Config.upload_url()}/#{hash}-#{filename}"
+    case File.rm(path) do
+      :ok ->
+        Logger.info("Removed #{filename} at #{path}. Size: #{size}. Hash: #{hash}.")
+        {:ok, filename}
+
+      {:error, reason} ->
+        Logger.error("Failed removing #{filename} at #{base_dir}: #{reason}")
+        {:error, reason}
+    end
   end
 end
