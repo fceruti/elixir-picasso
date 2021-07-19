@@ -7,24 +7,31 @@ defmodule Picasso.Config do
     end
   end
 
+  def processor() do
+    case env(:processor) do
+      nil -> raise "Must define :processor for Picasso to work properly."
+      processor -> processor
+    end
+  end
+
   def backend() do
     case env(:backend) do
       nil -> raise "Must define :backend for Picasso to work properly."
-      repo -> repo
+      backend -> backend
     end
   end
 
   def upload_dir() do
     case env(:upload_dir) do
       nil -> raise "Must define :upload_dir for Picasso to work properly."
-      repo -> repo
+      upload_dir -> upload_dir
     end
   end
 
   def upload_url() do
     case env(:media_url) do
       nil -> raise "Must define :upload_url for Picasso to work properly."
-      repo -> repo
+      media_url -> media_url
     end
   end
 

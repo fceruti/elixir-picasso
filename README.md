@@ -21,6 +21,7 @@ Add picasso config
 config :picasso,
   ecto_repo: YourApp.Repo,
   backend: Picasso.Backend.File,
+  processor: Picasso.Processor.Mogrify,
   upload_dir: "path/to/your/media/dir",
   upload_url: "localhost:4000/media/images",
 
