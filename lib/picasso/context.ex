@@ -6,9 +6,20 @@ defmodule Picasso.Context do
 
   require Logger
 
-  alias Picasso.Schema.Original
+  alias Picasso.Schema.{Original, Rendition}
   alias Picasso.{Config, Helpers}
 
+  # -----------------------
+  # Shared
+  # -----------------------
+  def get_image_url(image) do
+    url = Path.join([Config.upload_url(), image.filename])
+    url
+  end
+
+  # -----------------------
+  # Originals
+  # -----------------------
   def get_original!(id) do
     Original
     |> Config.repo().get!(id)
@@ -119,6 +130,48 @@ defmodule Picasso.Context do
 
       {:error, _changeset} = error ->
         error
+    end
+  end
+
+  # -----------------------
+  # Rendition
+  # -----------------------
+  def get_or_create_rendition(%Original{} = original, filters) do
+    # TODO: validate filters
+
+    rendition_filename = Helpers.get_rendition_filename(original.filename, filters)
+
+    case Config.repo().get_by(Rendition, original_id: original.id, filename: rendition_filename) do
+      nil ->
+        {:ok, tmp_path} = Config.backend().tmp_copy(original.filename)
+        %{path: tmp_path} = Config.processor().generate_rendition(tmp_path, filters)
+        {:ok, filename} = Config.backend().store(tmp_path, rendition_filename)
+
+        {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
+        {:ok, [width, height]} = get_image_dimensions(tmp_path)
+
+        with {:ok, rendition} <-
+               %Rendition{}
+               |> Rendition.changeset(%{
+                 original: original,
+                 filename: filename,
+                 filter_spec: filters,
+                 content_type: original.content_type,
+                 size: size,
+                 hash: hash,
+                 width: width,
+                 height: height
+               })
+               |> Config.repo().insert() do
+          {:ok, rendition, :created}
+        else
+          {:error, _reason} = error ->
+            Config.backend().remove(filename)
+            error
+        end
+
+      %Rendition{} = rendition ->
+        {:ok, rendition, :fetched}
     end
   end
 

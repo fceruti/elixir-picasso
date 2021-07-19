@@ -29,9 +29,9 @@ defmodule Picasso.Config do
   end
 
   def upload_url() do
-    case env(:media_url) do
+    case env(:upload_url) do
       nil -> raise "Must define :upload_url for Picasso to work properly."
-      media_url -> media_url
+      upload_url -> upload_url
     end
   end
 

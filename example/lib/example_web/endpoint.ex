@@ -28,6 +28,8 @@ defmodule ExampleWeb.Endpoint do
     only: ~w(css fonts images js favicon.ico robots.txt)
   )
 
+  plug(Plug.Static, at: "/media/images", from: Path.expand('./media/picasso'), gzip: false)
+
   plug(Plug.Static,
     at: "/kaffy",
     from: :kaffy,

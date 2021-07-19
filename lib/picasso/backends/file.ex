@@ -34,4 +34,19 @@ defmodule Picasso.Backend.File do
         {:error, reason}
     end
   end
+
+  def tmp_copy(filename) do
+    base_dir = Config.upload_dir()
+    original_path = Path.join([base_dir, filename])
+    tmp_path = Path.join(["tmp"])
+
+    case File.cp(original_path, tmp_path) do
+      :ok ->
+        {:ok, tmp_path}
+
+      {:error, reason} ->
+        Logger.error("Failed copying #{filename} at #{base_dir}: #{reason}")
+        {:error, reason}
+    end
+  end
 end

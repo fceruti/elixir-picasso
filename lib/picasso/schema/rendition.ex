@@ -34,7 +34,7 @@ defmodule Picasso.Schema.Rendition do
   @doc false
   def changeset(original, attrs) do
     original
-    |> cast(attrs, [:filename, :size, :hash, :content_type, :width, :height, :alt])
+    |> cast(attrs, [:filename, :size, :hash, :content_type, :width, :height])
     |> validate_required([:filename, :size, :hash, :content_type, :width, :height])
     |> validate_number(:size, greater_than: 0)
     |> validate_number(:width, greater_than: 0)

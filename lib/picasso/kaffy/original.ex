@@ -31,7 +31,8 @@ defmodule Picasso.Kaffy.Original do
 
   def index(_) do
     [
-      filename: nil,
+      filename: %{name: "Thumbnail"},
+      file: %{name: "Filename", value: fn o -> o.filename end},
       content_type: nil,
       size: %{name: "File Size (mb)", value: fn o -> size_in_mb(o.size) end},
       dimensions: %{name: "Dimension (w x h)", value: fn o -> "#{o.width} x #{o.height}" end},
