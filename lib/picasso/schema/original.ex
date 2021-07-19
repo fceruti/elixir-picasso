@@ -15,7 +15,7 @@ defmodule Picasso.Schema.Original do
         }
 
   schema("picasso_originals") do
-    field(:filename, :string)
+    field(:filename, Picasso.ImageField)
     field(:size, :integer)
     field(:hash, :string)
     field(:content_type, :string)
