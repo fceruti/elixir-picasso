@@ -22,8 +22,8 @@ config :picasso,
   ecto_repo: YourApp.Repo,
   backend: Picasso.Backend.File,
   processor: Picasso.Processor.Mogrify,
-  upload_dir: "path/to/your/media/dir",
-  media_url: "localhost:4000/media/images",
+  upload_dir: Path.join([File.cwd!(), "priv/media/picasso"]),
+  upload_url: "localhost:4000/media/images",
 
 ```
 
@@ -50,4 +50,16 @@ defmodule Example.Kaffy.Config do
     [] ++ Picasso.Kaffy.Config.resources()
   end
 end
+```
+
+Add image serving plug in your `endpoint.ex` for local dev:
+
+```elixir
+
+plug(Plug.Static,
+  at: "/images",
+  from: Path.expand('./media/picasso'),
+  gzip: false
+)
+
 ```

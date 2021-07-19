@@ -54,9 +54,6 @@ defmodule Picasso.ImageField do
 
       details ->
         filename = details
-        IO.inspect(resource)
-        IO.inspect(field)
-        IO.inspect(filename)
 
         [
           Phoenix.HTML.Tag.img_tag(Picasso.View.rendition_url(resource, "50x50"))

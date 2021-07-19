@@ -153,7 +153,7 @@ defmodule Picasso.Context do
         with {:ok, rendition} <-
                %Rendition{}
                |> Rendition.changeset(%{
-                 original: original,
+                 original_id: original.id,
                  filename: filename,
                  filter_spec: filters,
                  content_type: original.content_type,
@@ -163,6 +163,10 @@ defmodule Picasso.Context do
                  height: height
                })
                |> Config.repo().insert() do
+          Logger.info(
+            "Created rendition for Original(#{original.id}). Filters:#{filters}. Hash: #{hash}"
+          )
+
           {:ok, rendition, :created}
         else
           {:error, _reason} = error ->
