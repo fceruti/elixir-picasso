@@ -19,4 +19,15 @@ defmodule Picasso.Helpers do
     |> Base.encode16()
     |> String.downcase()
   end
+
+  def get_rendition_filename(original_filename, filters) do
+    [extension | reversed_filename] = original_filename |> String.split(".") |> Enum.reverse()
+    filename = reversed_filename |> Enum.reverse() |> Enum.join(".")
+
+    if String.length(filename) == 0 do
+      "#{extension}-#{filters}"
+    else
+      "#{filename}-#{filters}.#{extension}"
+    end
+  end
 end
