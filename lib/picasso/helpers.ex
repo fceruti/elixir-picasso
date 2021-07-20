@@ -1,11 +1,15 @@
 defmodule Picasso.Helpers do
   def get_file_info(file_path) do
-    hash = File.stream!(file_path, [], 2048) |> sha256()
+    try do
+      hash = File.stream!(file_path, [], 2048) |> sha256()
 
-    with {:ok, %File.Stat{size: size}} <- File.stat(file_path) do
-      {:ok, [hash, size]}
-    else
-      {:error, _reason} = error -> error
+      with {:ok, %File.Stat{size: size}} <- File.stat(file_path) do
+        {:ok, [hash, size]}
+      else
+        {:error, _reason} = error -> error
+      end
+    rescue
+      e -> {:error, e.reason}
     end
   end
 

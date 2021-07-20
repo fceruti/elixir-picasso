@@ -75,6 +75,7 @@ defmodule Picasso.Context do
         Config.datastore().remove(old_filename)
         remove_all_renditions(original)
         Logger.info("Picasso Original(#{original.id}) updated.")
+        {:ok, original}
       else
         {:error, _reason} = error ->
           Config.datastore().remove(filename)
@@ -122,7 +123,7 @@ defmodule Picasso.Context do
     case Config.repo().get_by(Rendition, original_id: original.id, filter_spec: filters) do
       nil ->
         {:ok, tmp_path} = Config.datastore().read(original.filename)
-        %{path: tmp_path} = Config.processor().generate_rendition(tmp_path, filters)
+        {:ok, %{path: tmp_path}} = Config.processor().generate_rendition(tmp_path, filters)
         rendition_filename = Helpers.get_rendition_filename(original.filename, filters)
         {:ok, filename} = Config.datastore().store(tmp_path, rendition_filename)
 
@@ -142,8 +143,9 @@ defmodule Picasso.Context do
                  height: height
                })
                |> Config.repo().insert() do
-          Logger.info("Created Rendition for Original(#{original.id}).
-            Filters:#{filters}. Hash: #{hash}.")
+          Logger.info(
+            "Created Rendition for Original(#{original.id}). Filters:#{filters}. Hash: #{hash}."
+          )
 
           {:ok, rendition, :created}
         else
@@ -163,7 +165,7 @@ defmodule Picasso.Context do
     rendition_query
     |> select([:filename])
     |> Config.repo().all()
-    |> Enum.map(&Config.datastore().remove(&1))
+    |> Enum.map(&Config.datastore().remove(&1.filename))
 
     {n_deleted, _} = rendition_query |> Config.repo().delete_all()
     Logger.info("Removed #{n_deleted} Renditions of Original(#{original_id}).")

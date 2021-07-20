@@ -39,13 +39,18 @@ defmodule Picasso.Datastore.File do
   def remove(filename) do
     base_dir = Config.upload_dir()
     path = Path.join([base_dir, filename])
-    {:ok, [hash, size]} = Helpers.get_file_info(path)
 
-    case File.rm(path) do
-      :ok ->
-        Logger.info("Removed #{filename} at #{path}. Size: #{size}. Hash: #{hash}.")
-        {:ok, filename}
+    with {:ok, [hash, size]} <- Helpers.get_file_info(path) do
+      case File.rm(path) do
+        :ok ->
+          Logger.info("Removed #{filename} at #{path}. Size: #{size}. Hash: #{hash}.")
+          {:ok, filename}
 
+        {:error, reason} = error ->
+          Logger.error("Failed removing #{filename} at #{base_dir}: #{reason}")
+          error
+      end
+    else
       {:error, reason} = error ->
         Logger.error("Failed removing #{filename} at #{base_dir}: #{reason}")
         error
