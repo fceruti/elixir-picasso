@@ -14,10 +14,10 @@ defmodule Picasso.Config do
     end
   end
 
-  def backend() do
-    case env(:backend) do
-      nil -> raise "Must define :backend for Picasso to work properly."
-      backend -> backend
+  def datastore() do
+    case env(:datastore) do
+      nil -> raise "Must define :datastore for Picasso to work properly."
+      datastore -> datastore
     end
   end
 

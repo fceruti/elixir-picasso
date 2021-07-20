@@ -28,7 +28,7 @@ config :phoenix, :json_library, Jason
 
 config :picasso,
   ecto_repo: Example.Repo,
-  backend: Picasso.Backend.File,
+  datastore: Picasso.Datastore.File,
   processor: Picasso.Processor.Mogrify,
   upload_dir: Path.join([File.cwd!(), "priv/media/picasso"]),
   upload_url: "http://localhost:4000/images"

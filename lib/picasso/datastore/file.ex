@@ -1,7 +1,24 @@
-defmodule Picasso.Backend.File do
+defmodule Picasso.Datastore.File do
+  @behaviour Picasso.Datastore.Behaviour
+
   require Logger
 
   alias Picasso.{Config, Helpers}
+
+  def read(filename) do
+    base_dir = Config.upload_dir()
+    original_path = Path.join([base_dir, filename])
+    tmp_path = Path.join(["tmp", filename])
+
+    case File.cp(original_path, tmp_path) do
+      :ok ->
+        {:ok, tmp_path}
+
+      {:error, reason} ->
+        Logger.error("Failed reading #{filename} at #{base_dir}: #{reason}")
+        {:error, reason}
+    end
+  end
 
   def store(tmp_path, filename) do
     base_dir = Config.upload_dir()
@@ -19,6 +36,10 @@ defmodule Picasso.Backend.File do
     end
   end
 
+  @doc """
+  Removes
+  """
+  @spec remove(String.t()) :: {:error, atom} | {:ok, String.t()}
   def remove(filename) do
     base_dir = Config.upload_dir()
     path = Path.join([base_dir, filename])
@@ -29,24 +50,9 @@ defmodule Picasso.Backend.File do
         Logger.info("Removed #{filename} at #{path}. Size: #{size}. Hash: #{hash}.")
         {:ok, filename}
 
-      {:error, reason} ->
+      {:error, reason} = error ->
         Logger.error("Failed removing #{filename} at #{base_dir}: #{reason}")
-        {:error, reason}
-    end
-  end
-
-  def tmp_copy(filename) do
-    base_dir = Config.upload_dir()
-    original_path = Path.join([base_dir, filename])
-    tmp_path = Path.join(["tmp"])
-
-    case File.cp(original_path, tmp_path) do
-      :ok ->
-        {:ok, tmp_path}
-
-      {:error, reason} ->
-        Logger.error("Failed copying #{filename} at #{base_dir}: #{reason}")
-        {:error, reason}
+        error
     end
   end
 end

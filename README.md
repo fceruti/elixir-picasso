@@ -20,7 +20,7 @@ Add picasso config
 
 config :picasso,
   ecto_repo: YourApp.Repo,
-  backend: Picasso.Backend.File,
+  datastore: Picasso.Datastore.File,
   processor: Picasso.Processor.Mogrify,
   upload_dir: Path.join([File.cwd!(), "priv/media/picasso"]),
   upload_url: "localhost:4000/media/images",
@@ -34,7 +34,7 @@ mix picasso.gen.migration
 ```
 
 
-Add Picasso admin backend in your kaffy config:
+Add Picasso admin resources to your kaffy config:
 
 ```elixir
 use Mix.Config

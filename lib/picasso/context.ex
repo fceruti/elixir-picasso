@@ -33,7 +33,7 @@ defmodule Picasso.Context do
     {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
     {:ok, [width, height]} = get_image_dimensions(tmp_path)
 
-    with {:ok, filename} <- Config.backend().store(tmp_path, filename) do
+    with {:ok, filename} <- Config.datastore().store(tmp_path, filename) do
       with {:ok, original} <-
              %Original{}
              |> Original.changeset(%{
@@ -50,7 +50,7 @@ defmodule Picasso.Context do
         {:ok, original}
       else
         {:error, reason} ->
-          Config.backend().remove(filename)
+          Config.datastore().remove(filename)
           {:error, reason}
       end
     else
@@ -72,7 +72,7 @@ defmodule Picasso.Context do
 
     {:ok, filename} = get_unique_filename(filename)
 
-    with {:ok, filename} <- Config.backend().store(tmp_path, filename) do
+    with {:ok, filename} <- Config.datastore().store(tmp_path, filename) do
       old_filename = original.filename
       {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
       {:ok, [width, height]} = get_image_dimensions(tmp_path)
@@ -90,10 +90,10 @@ defmodule Picasso.Context do
              })
              |> Config.repo().update() do
         Logger.info("Picasso Original ##{original.id} updated")
-        Config.backend().remove(old_filename)
+        Config.datastore().remove(old_filename)
       else
         {:error, _reason} = error ->
-          Config.backend().remove(filename)
+          Config.datastore().remove(filename)
           error
       end
     else
@@ -125,7 +125,7 @@ defmodule Picasso.Context do
     case original |> Config.repo().delete() do
       {:ok, original} ->
         Logger.info("Picasso Original ##{original.id} deleted.")
-        Config.backend().remove(old_filename)
+        Config.datastore().remove(old_filename)
         {:ok, original}
 
       {:error, _changeset} = error ->
@@ -139,13 +139,12 @@ defmodule Picasso.Context do
   def get_or_create_rendition(%Original{} = original, filters) do
     # TODO: validate filters
 
-    rendition_filename = Helpers.get_rendition_filename(original.filename, filters)
-
-    case Config.repo().get_by(Rendition, original_id: original.id, filename: rendition_filename) do
+    case Config.repo().get_by(Rendition, original_id: original.id, filter_spec: filters) do
       nil ->
-        {:ok, tmp_path} = Config.backend().tmp_copy(original.filename)
+        {:ok, tmp_path} = Config.datastore().read(original.filename)
         %{path: tmp_path} = Config.processor().generate_rendition(tmp_path, filters)
-        {:ok, filename} = Config.backend().store(tmp_path, rendition_filename)
+        rendition_filename = Helpers.get_rendition_filename(original.filename, filters)
+        {:ok, filename} = Config.datastore().store(tmp_path, rendition_filename)
 
         {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
         {:ok, [width, height]} = get_image_dimensions(tmp_path)
@@ -170,7 +169,7 @@ defmodule Picasso.Context do
           {:ok, rendition, :created}
         else
           {:error, _reason} = error ->
-            Config.backend().remove(filename)
+            Config.datastore().remove(filename)
             error
         end
 
