@@ -25,7 +25,8 @@ defmodule Picasso.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix, "~> 1.5.8"},
       {:phoenix_html, "~> 2.11"},
-      {:mogrify, "~> 0.9.1"}
+      {:mogrify, "~> 0.9.1"},
+      {:temp, "~> 0.4"}
     ]
   end
 end
