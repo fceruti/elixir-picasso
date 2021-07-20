@@ -3,18 +3,17 @@ defmodule Picasso.Repo.Migrations.AddReditions do
 
   def change do
     create table("picasso_renditions") do
-      add :original_id, references("picasso_originals", on_delete: :delete_all)
-      add :filter_spec, :string
-      add :filename, :string
-      add :size, :bigint
-      add :hash, :string, size: 64
-      add :content_type, :string
-      add :width, :integer
-      add :height, :integer
+      add :original_id, references("picasso_originals", on_delete: :delete_all), null: false
+      add :filter_spec, :string, null: false
+      add :filename, :string, null: false
+      add :size, :bigint, null: false
+      add :hash, :string, size: 64, null: false
+      add :content_type, :string, null: false
+      add :width, :integer, null: false
+      add :height, :integer, null: false
 
       timestamps()
     end
-    create index("picasso_renditions", [:hash])
-
+    create index("picasso_renditions", [:original_id, :filter_spec])
   end
 end
