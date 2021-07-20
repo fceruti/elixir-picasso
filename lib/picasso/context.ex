@@ -2,36 +2,20 @@ defmodule Picasso.Context do
   @moduledoc """
   Picasso's public API.
   """
-  import Mogrify
+  import Ecto.Query
 
   require Logger
 
   alias Picasso.Schema.{Original, Rendition}
   alias Picasso.{Config, Helpers}
 
-  # -----------------------
-  # Shared
-  # -----------------------
-  def get_image_url(image) do
-    url = Path.join([Config.upload_url(), image.filename])
-    url
-  end
-
-  # -----------------------
-  # Originals
-  # -----------------------
-  def get_original!(id) do
-    Original
-    |> Config.repo().get!(id)
-  end
-
   def create_original(
         %Plug.Upload{filename: filename, path: tmp_path, content_type: content_type},
         alt \\ nil
       ) do
-    {:ok, filename} = get_unique_filename(filename)
+    {:ok, filename} = Helpers.get_unique_filename(filename)
     {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
-    {:ok, [width, height]} = get_image_dimensions(tmp_path)
+    {:ok, [width, height]} = Config.processor().get_image_dimensions(tmp_path)
 
     with {:ok, filename} <- Config.datastore().store(tmp_path, filename) do
       with {:ok, original} <-
@@ -46,7 +30,7 @@ defmodule Picasso.Context do
                alt: alt
              })
              |> Config.repo().insert() do
-        Logger.info("Picasso Original ##{original.id} created")
+        Logger.info("Picasso Original(#{original.id}) created.")
         {:ok, original}
       else
         {:error, reason} ->
@@ -67,15 +51,14 @@ defmodule Picasso.Context do
         },
         alt
       ) do
-    # TODO: remove all renditions
-    original = get_original!(original_id)
+    original = Config.repo().get_by!(Original, id: original_id)
 
-    {:ok, filename} = get_unique_filename(filename)
+    {:ok, filename} = Helpers.get_unique_filename(filename)
 
     with {:ok, filename} <- Config.datastore().store(tmp_path, filename) do
       old_filename = original.filename
       {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
-      {:ok, [width, height]} = get_image_dimensions(tmp_path)
+      {:ok, [width, height]} = Config.processor().get_image_dimensions(tmp_path)
 
       with {:ok, original} <-
              original
@@ -89,8 +72,9 @@ defmodule Picasso.Context do
                alt: alt
              })
              |> Config.repo().update() do
-        Logger.info("Picasso Original ##{original.id} updated")
         Config.datastore().remove(old_filename)
+        remove_all_renditions(original)
+        Logger.info("Picasso Original(#{original.id}) updated.")
       else
         {:error, _reason} = error ->
           Config.datastore().remove(filename)
@@ -102,14 +86,14 @@ defmodule Picasso.Context do
   end
 
   def update_original(original_id, nil, alt) do
-    original = get_original!(original_id)
+    original = Config.repo().get_by!(Original, id: original_id)
 
     with {:ok, original} <-
            original
            |> Original.changeset(%{alt: alt})
            |> Config.repo().update() do
-      Logger.info("Picasso Original ##{original.id} updated")
-
+      remove_all_renditions(original)
+      Logger.info("Picasso Original(#{original.id}) updated.")
       {:ok, original}
     else
       {:error, _reason} = error ->
@@ -118,14 +102,13 @@ defmodule Picasso.Context do
   end
 
   def delete_original(original_id) do
-    # TODO: remove all renditions
-    original = get_original!(original_id)
-    old_filename = original.filename
+    original = Config.repo().get_by!(Original, id: original_id)
 
     case original |> Config.repo().delete() do
       {:ok, original} ->
-        Logger.info("Picasso Original ##{original.id} deleted.")
-        Config.datastore().remove(old_filename)
+        Logger.info("Picasso Original(#{original.id}) deleted.")
+        Config.datastore().remove(original.filename)
+        remove_all_renditions(original)
         {:ok, original}
 
       {:error, _changeset} = error ->
@@ -133,9 +116,6 @@ defmodule Picasso.Context do
     end
   end
 
-  # -----------------------
-  # Rendition
-  # -----------------------
   def get_or_create_rendition(%Original{} = original, filters) do
     # TODO: validate filters
 
@@ -147,7 +127,7 @@ defmodule Picasso.Context do
         {:ok, filename} = Config.datastore().store(tmp_path, rendition_filename)
 
         {:ok, [hash, size]} = Helpers.get_file_info(tmp_path)
-        {:ok, [width, height]} = get_image_dimensions(tmp_path)
+        {:ok, [width, height]} = Config.processor().get_image_dimensions(tmp_path)
 
         with {:ok, rendition} <-
                %Rendition{}
@@ -162,9 +142,8 @@ defmodule Picasso.Context do
                  height: height
                })
                |> Config.repo().insert() do
-          Logger.info(
-            "Created rendition for Original(#{original.id}). Filters:#{filters}. Hash: #{hash}"
-          )
+          Logger.info("Created Rendition for Original(#{original.id}).
+            Filters:#{filters}. Hash: #{hash}.")
 
           {:ok, rendition, :created}
         else
@@ -178,15 +157,15 @@ defmodule Picasso.Context do
     end
   end
 
-  # -----------------------
-  # Helpers
-  # -----------------------
-  defp get_unique_filename(filename) do
-    {:ok, Ecto.UUID.generate() <> "-" <> filename}
-  end
+  defp remove_all_renditions(%Original{id: original_id}) do
+    rendition_query = from(r in Rendition, where: r.original_id == ^original_id)
 
-  defp get_image_dimensions(file_path) do
-    %{height: height, width: width} = identify(file_path)
-    {:ok, [width, height]}
+    rendition_query
+    |> select([:filename])
+    |> Config.repo().all()
+    |> Enum.map(&Config.datastore().remove(&1))
+
+    {n_deleted, _} = rendition_query |> Config.repo().delete_all()
+    Logger.info("Removed #{n_deleted} Renditions of Original(#{original_id}).")
   end
 end

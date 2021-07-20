@@ -30,4 +30,8 @@ defmodule Picasso.Helpers do
       "#{filename}-#{filters}.#{extension}"
     end
   end
+
+  def get_unique_filename(filename) do
+    {:ok, Ecto.UUID.generate() <> "-" <> filename}
+  end
 end

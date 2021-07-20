@@ -36,10 +36,6 @@ defmodule Picasso.Datastore.File do
     end
   end
 
-  @doc """
-  Removes
-  """
-  @spec remove(String.t()) :: {:error, atom} | {:ok, String.t()}
   def remove(filename) do
     base_dir = Config.upload_dir()
     path = Path.join([base_dir, filename])
