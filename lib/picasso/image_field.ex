@@ -2,20 +2,14 @@ defmodule Picasso.ImageField do
   use Ecto.Type
   def type, do: :string
 
-  def cast(data) do
-    # IO.inspect("cast - data: #{inspect(data)}")
-    {:ok, data}
-  end
+  def cast(data), do: {:ok, data}
 
-  def load(data) do
-    # IO.inspect("load - data: #{inspect(data)}")
-    {:ok, data}
-  end
+  def load(data), do: {:ok, data}
 
   def dump(data), do: {:ok, data}
 
   # this function should return the HTML related to rendering the customized form field.
-  def render_form(conn, changeset, form, field, _options) do
+  def render_form(_conn, changeset, form, field, _options) do
     current_image_div =
       if form.data.filename do
         [
@@ -41,13 +35,8 @@ defmodule Picasso.ImageField do
   end
 
   # this is how the field should be rendered on the index page
-  def render_index(conn, resource, field, _options) do
+  def render_index(_conn, resource, _field, _options) do
     img_url = Picasso.View.rendition_url(resource, "70x70")
     [Phoenix.HTML.Tag.img_tag(img_url)]
-  end
-
-  defp get_field_value(changeset, field) do
-    field_value = Map.get(changeset.data, field)
-    field_value
   end
 end
