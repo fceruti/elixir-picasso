@@ -45,7 +45,8 @@ defmodule Picasso.MixProject do
       {:phoenix, "~> 1.5.8"},
       {:phoenix_html, "~> 2.11"},
       {:mogrify, "~> 0.9.1"},
-      {:temp, "~> 0.4"}
+      {:temp, "~> 0.4"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end
