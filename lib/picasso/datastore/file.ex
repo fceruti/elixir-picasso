@@ -5,6 +5,7 @@ defmodule Picasso.Datastore.File do
 
   alias Picasso.{Config, Helpers}
 
+  @impl true
   def read(filename) do
     base_dir = Config.upload_dir()
     original_path = Path.join([base_dir, filename])
@@ -20,6 +21,7 @@ defmodule Picasso.Datastore.File do
     end
   end
 
+  @impl true
   def store(tmp_path, filename) do
     base_dir = Config.upload_dir()
     final_path = Path.join([base_dir, filename])
@@ -36,6 +38,7 @@ defmodule Picasso.Datastore.File do
     end
   end
 
+  @impl true
   def remove(filename) do
     base_dir = Config.upload_dir()
     path = Path.join([base_dir, filename])

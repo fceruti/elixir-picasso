@@ -2,6 +2,29 @@
 
 Dead simple image resizing & cropping tool for phoenix projects.
 
+## Usage
+
+```elixir
+img_url = Picasso.View.rendition_url(original, "70x70")
+Phoenix.HTML.Tag.img_tag(img_url)
+```
+
+## Features
+
+* Plug & Play
+* Simple API to generate image renditions
+* Integration with Kaffy
+
+## Roadmap
+
+This library is under development. Use it if you know what you are doing.
+
+* Add S3 backend
+* Add rendition options to `generate_rendition/2`
+* Do all image transformations in elixir, droping all external dependencies (image magik)
+* Add testing
+* Add docs
+
 ## Installation instructions
 
 Add `picasso` to your list of dependencies in `mix.exs`:
@@ -56,10 +79,11 @@ Add image serving plug in your `endpoint.ex` for local dev:
 
 ```elixir
 
-plug(Plug.Static,
-  at: "/images",
-  from: Path.expand('./media/picasso'),
+plug Plug.Static,
+  at: "/media/images",
+  from: Path.expand('priv/media/picasso'),
   gzip: false
-)
 
 ```
+
+* Note that `at` is related to config's `:upload_url` and `from` to `upload_dir`
