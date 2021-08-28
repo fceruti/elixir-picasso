@@ -87,3 +87,14 @@ plug Plug.Static,
 ```
 
 * Note that `at` is related to config's `:upload_url` and `from` to `upload_dir`
+
+
+You'll also want to update the max upload file size at `endpoint.ex`
+
+
+```elixir
+  plug Plug.Parsers,
+    parsers: [:urlencoded, {:multipart, length: 20_000_000}, :json],
+    pass: ["*/*"],
+    json_decoder: Phoenix.json_library()
+```

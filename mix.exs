@@ -4,7 +4,7 @@ defmodule Picasso.MixProject do
   def project do
     [
       app: :picasso,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -40,10 +40,10 @@ defmodule Picasso.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto_sql, "~> 3.6"},
+      {:ecto_sql, ">= 0.0.0"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix, "~> 1.5.8"},
-      {:phoenix_html, "~> 2.11"},
+      {:phoenix, ">= 0.0.0"},
+      {:phoenix_html, ">= 0.0.0"},
       {:mogrify, "~> 0.9.1"},
       {:temp, "~> 0.4"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
